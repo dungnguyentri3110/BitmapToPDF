@@ -11,6 +11,7 @@ import androidx.camera.view.TransformExperimental;
 import androidx.constraintlayout.widget.ConstraintLayout;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -92,18 +93,18 @@ import java.util.Map;
     }
 
     public void onClickConvert(View view) {
-//        Intent intent = new Intent(this, CameraActivity.class);
-////        startActivity(intent);
-//        startActivityForResult(intent, 10);
+        @SuppressLint("UnsafeOptInUsageError") Intent intent = new Intent(this, CameraActivity.class);
+//        startActivity(intent);
+        startActivityForResult(intent, 10);
 
         //TODO: TẠO PDF
-        List<Bitmap> bitmaps = new ArrayList<>();
-        Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.img);
-        bitmaps.add(bitmap);
-        bitmaps.add(bitmap);
-        bitmaps.add(bitmap);
+//        List<Bitmap> bitmaps = new ArrayList<>();
+//        Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.img);
 //        bitmaps.add(bitmap);
-        convertToPdf(bitmaps);
+//        bitmaps.add(bitmap);
+//        bitmaps.add(bitmap);
+////        bitmaps.add(bitmap);
+//        convertToPdf(bitmaps);
     }
 
     @Override

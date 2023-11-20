@@ -5,84 +5,137 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".CameraActivity">
+
     <FrameLayout
         android:id="@+id/previewCamera"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"/>
-<!--    <FrameLayout-->
-<!--        android:layout_width="300dp"-->
-<!--        android:layout_height="424.3dp"-->
-<!--        app:layout_constraintLeft_toLeftOf="@+id/previewCamera"-->
-<!--        app:layout_constraintRight_toRightOf="@+id/previewCamera"-->
-<!--        android:id="@+id/frame"-->
-<!--        app:layout_constraintTop_toTopOf="@+id/previewCamera"-->
-<!--        app:layout_constraintBottom_toBottomOf="@+id/previewCamera"-->
-<!--        android:background="@drawable/bg_frame">-->
-
-<!--    </FrameLayout>-->
-    <!--A4-->
-<!--    <FrameLayout-->
-<!--        android:layout_width="800dp"-->
-<!--        android:layout_height="1131.43dp"-->
-<!--        app:layout_constraintLeft_toLeftOf="@+id/previewCamera"-->
-<!--        app:layout_constraintRight_toRightOf="@+id/previewCamera"-->
-<!--        android:id="@+id/frame"-->
-<!--        app:layout_constraintTop_toTopOf="@+id/previewCamera"-->
-<!--        app:layout_constraintBottom_toBottomOf="@+id/previewCamera"-->
-<!--        android:background="@drawable/bg_frame">-->
-
-<!--    </FrameLayout>-->
-
-<!--    &lt;!&ndash;A5&ndash;&gt;-->
-<!--    <FrameLayout-->
-<!--        android:layout_width="700dp"-->
-<!--        android:layout_height="993.25dp"-->
-<!--        app:layout_constraintLeft_toLeftOf="@+id/previewCamera"-->
-<!--        app:layout_constraintRight_toRightOf="@+id/previewCamera"-->
-<!--        android:id="@+id/frame"-->
-<!--        app:layout_constraintTop_toTopOf="@+id/previewCamera"-->
-<!--        app:layout_constraintBottom_toBottomOf="@+id/previewCamera"-->
-<!--        android:background="@drawable/bg_frame">-->
-
-<!--    </FrameLayout>-->
-<!--    &lt;!&ndash;A6&ndash;&gt;-->
-<!--    <FrameLayout-->
-<!--        android:layout_width="600dp"-->
-<!--        android:layout_height="845.72dp"-->
-<!--        app:layout_constraintLeft_toLeftOf="@+id/previewCamera"-->
-<!--        app:layout_constraintRight_toRightOf="@+id/previewCamera"-->
-<!--        android:id="@+id/frame"-->
-<!--        app:layout_constraintTop_toTopOf="@+id/previewCamera"-->
-<!--        app:layout_constraintBottom_toBottomOf="@+id/previewCamera"-->
-<!--        android:background="@drawable/bg_frame">-->
-
-<!--    </FrameLayout>-->
-
-    <!--CCCD-->
-    <FrameLayout
-        android:layout_width="475.74dp"
-        android:layout_height="300dp"
-        app:layout_constraintLeft_toLeftOf="@+id/previewCamera"
-        app:layout_constraintRight_toRightOf="@+id/previewCamera"
-        android:id="@+id/frame"
-        app:layout_constraintTop_toTopOf="@+id/previewCamera"
-        app:layout_constraintBottom_toBottomOf="@+id/previewCamera"
-        android:background="@drawable/bg_frame">
-
-    </FrameLayout>
-    <Button
-        android:id="@+id/btnCapture"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        android:layout_width="100dp"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <RelativeLayout
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Capture"
-        android:onClick="onClickCapture"
-        android:layout_marginBottom="50dp"/>
+        app:layout_constraintBottom_toBottomOf="@+id/previewCamera"
+        app:layout_constraintLeft_toLeftOf="@+id/previewCamera"
+        app:layout_constraintRight_toRightOf="@+id/previewCamera"
+        app:layout_constraintTop_toTopOf="@+id/previewCamera">
+
+        <FrameLayout
+            android:id="@+id/frameA4"
+            android:layout_width="297dp"
+            android:layout_height="210dp"
+            android:layout_centerInParent="true"
+            android:background="@drawable/bg_frame">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical|end"
+                android:rotation="270"
+                android:text="Khổ A4"
+                android:textSize="18sp"
+                android:textStyle="bold" />
+        </FrameLayout>
+
+        <FrameLayout
+            android:id="@+id/frameA5"
+            android:layout_width="210dp"
+            android:layout_height="148dp"
+            android:layout_centerInParent="true"
+            android:background="@drawable/bg_frame">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical|end"
+                android:rotation="270"
+                android:text="Khổ A5"
+                android:textSize="18sp"
+                android:textStyle="bold" />
+        </FrameLayout>
+
+        <FrameLayout
+            android:id="@+id/frameA6"
+            android:layout_width="148dp"
+            android:layout_height="105dp"
+            android:layout_centerInParent="true"
+            android:background="@drawable/bg_frame">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical|end"
+                android:rotation="270"
+                android:text="Khổ A6"
+                android:textSize="18sp"
+                android:textStyle="bold" />
+        </FrameLayout>
+
+        <FrameLayout
+            android:id="@+id/frameCCCD"
+            android:layout_width="85.6dp"
+            android:layout_height="53.98dp"
+            android:layout_centerInParent="true"
+            android:background="@drawable/bg_frame">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical|end"
+                android:rotation="270"
+                android:text="CCCD"
+                android:textSize="18sp"
+                android:textStyle="bold" />
+        </FrameLayout>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignBottom="@id/frameA4"
+            android:layout_centerHorizontal="true"
+            android:layout_marginBottom="10dp"
+            android:text="Vị trí đặt giấy tờ Scan"
+            android:textSize="40sp"
+            android:textStyle="bold" />
+    </RelativeLayout>
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent">
+
+        <Button
+            android:id="@+id/btnChangeFrame"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="10dp"
+            android:layout_marginBottom="50dp"
+            android:onClick="onClickChangePaperSize"
+            android:text="Đổi khổ giấy" />
+
+        <Button
+            android:id="@+id/btnCapture"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="10dp"
+            android:layout_marginBottom="50dp"
+            android:onClick="onClickCapture"
+            android:text="Capture" />
+
+        <Button
+            android:id="@+id/btnDone"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="10dp"
+            android:layout_marginBottom="50dp"
+            android:onClick="onClickDone"
+            android:text="Xong" />
+    </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

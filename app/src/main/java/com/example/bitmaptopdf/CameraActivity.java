@@ -1,147 +1,257 @@
 package com.example.bitmaptopdf;
 
-import static android.provider.MediaStore.Files.FileColumns.MEDIA_TYPE_IMAGE;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.OptIn;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.camera.core.AspectRatio;
-import androidx.camera.core.CameraInfo;
-import androidx.camera.core.CameraSelector;
-import androidx.camera.core.CameraState;
-import androidx.camera.core.ExperimentalUseCaseGroup;
-import androidx.camera.core.ImageCapture;
-import androidx.camera.core.ImageCaptureException;
-import androidx.camera.core.ImageProxy;
-import androidx.camera.core.Preview;
-import androidx.camera.core.VideoCapture;
-import androidx.camera.lifecycle.ProcessCameraProvider;
-import androidx.camera.view.PreviewView;
-import androidx.camera.view.TransformExperimental;
-import androidx.camera.view.transform.CoordinateTransform;
-import androidx.camera.view.transform.FileTransformFactory;
-import androidx.camera.view.transform.ImageProxyTransformFactory;
-import androidx.camera.view.transform.OutputTransform;
-import androidx.lifecycle.Observer;
-
-import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageManager;
-import android.content.pm.ProviderInfo;
-import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.Canvas;
 import android.graphics.Matrix;
-import android.graphics.Point;
 import android.graphics.Rect;
+import android.graphics.pdf.PdfDocument;
 import android.hardware.Camera;
-import android.hardware.camera2.CameraAccessException;
-import android.hardware.camera2.CameraManager;
-import android.hardware.usb.UsbDevice;
-import android.hardware.usb.UsbManager;
-import android.icu.text.SimpleDateFormat;
 import android.os.Bundle;
-import android.os.Environment;
-import android.provider.MediaStore;
-import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Display;
-import android.view.Surface;
 import android.view.View;
+import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.FrameLayout;
-import android.widget.LinearLayout;
 import android.widget.Toast;
 
-import com.google.common.util.concurrent.ListenableFuture;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.camera.core.ExperimentalUseCaseGroup;
+import androidx.camera.view.TransformExperimental;
 
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
-import java.nio.ByteBuffer;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
+import java.util.Random;
 
-@ExperimentalUseCaseGroup @TransformExperimental public class CameraActivity extends AppCompatActivity {
-    public static final String TAG =">>>>>" + CameraActivity.class.getSimpleName();
+@ExperimentalUseCaseGroup
+@TransformExperimental
+public class CameraActivity extends AppCompatActivity {
+    public static final String TAG = ">>>>>" + CameraActivity.class.getSimpleName();
 
-    private Camera cam = null;
-
-    private FrameLayout frameLayout, previewView;
-
+    private final Camera cam = null;
+    private final List<FrameLayout> frames = new ArrayList<>();
+    PaperSize currentSize = PaperSize.ALL;
+    List<Bitmap> bitmaps = new ArrayList<>();
+    private FrameLayout frameLayoutA4, previewView;
+    private FrameLayout frameLayoutA5;
+    private FrameLayout frameLayoutA6;
+    private FrameLayout frameLayoutCCCD;
     private CameraPreview cameraPreview;
+
+    // Hàm để thay đổi lần lượt giá trị của enum PaperSize
+    private static PaperSize changePaperSizeSequentially(PaperSize currentSize) {
+        // Lấy danh sách tất cả các giá trị của enum
+        PaperSize[] sizes = PaperSize.values();
+
+        // Tìm vị trí của giá trị hiện tại trong mảng
+        int currentIndex = -1;
+        for (int i = 0; i < sizes.length; i++) {
+            if (sizes[i] == currentSize) {
+                currentIndex = i;
+                break;
+            }
+        }
+
+        // Chuyển đến giá trị tiếp theo trong mảng (lặp lại nếu đã ở cuối mảng)
+        int nextIndex = (currentIndex + 1) % sizes.length;
+
+        // Trả về giá trị mới
+        return sizes[nextIndex];
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_camera);
-        frameLayout = findViewById(R.id.frame);
-        DisplayMetrics displayMetrics = new DisplayMetrics();
-        getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+        setUpViewFrame();
+        configShowFrame(PaperSize.ALL);
 
-        int width = displayMetrics.widthPixels;
-        int height = width*16/9;
-        LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(width, height);
+//        DisplayMetrics displayMetrics = new DisplayMetrics();
+//        getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+//
+//        int width = displayMetrics.widthPixels;
+//        int height = width*16/9;
+//        LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(width, height);
         //Xét preview cho camera
-        cam = openCamera();
-        previewView = findViewById(R.id.previewCamera);
-        previewView.setLayoutParams(layoutParams);
-        cameraPreview = new CameraPreview(this, cam);
-        cameraPreview.setScaleX(-1f);
-        previewView.addView(cameraPreview);
-        Camera.Parameters parameters = cam.getParameters();
-        Log.d(TAG, "Img width: " + parameters.getPictureSize().width);
-        Log.d(TAG, "Img height: " + parameters.getPictureSize().height);
-        cam.setParameters(parameters);
-        cam.setDisplayOrientation(270);
+//        cam = openCamera();
+//        previewView = findViewById(R.id.previewCamera);
+//        previewView.setLayoutParams(layoutParams);
+//        cameraPreview = new CameraPreview(this, cam);
+//        cameraPreview.setScaleX(-1f);
+//        previewView.addView(cameraPreview);
+//        Camera.Parameters parameters = cam.getParameters();
+//        Log.d(TAG, "Img width: " + parameters.getPictureSize().width);
+//        Log.d(TAG, "Img height: " + parameters.getPictureSize().height);
+//        cam.setParameters(parameters);
+//        cam.setDisplayOrientation(270);
     }
 
-    private Camera openCamera(){
-        Camera  cam = null;
-            try {
-                cam = Camera.open(0); // attempt to get a Camera instance
+    //Hàm để cài đặt view cho các Frame
+    protected void setUpViewFrame() {
+        frameLayoutA4 = findViewById(R.id.frameA4);
+        frameLayoutA5 = findViewById(R.id.frameA5);
+        frameLayoutA6 = findViewById(R.id.frameA6);
+        frameLayoutCCCD = findViewById(R.id.frameCCCD);
+        frames.add(frameLayoutA4);
+        frames.add(frameLayoutA5);
+        frames.add(frameLayoutA6);
+        frames.add(frameLayoutCCCD);
+
+        WindowManager windowManager = (WindowManager) getSystemService(Context.WINDOW_SERVICE);
+        // Lấy thông tin về màn hình
+        Display display = windowManager.getDefaultDisplay();
+        // Lấy kích thước của màn hình
+        int screenWidth = display.getWidth();
+
+        frameLayoutA4.getViewTreeObserver().addOnGlobalLayoutListener(() -> {
+            int widthA4 = screenWidth - 100 * 2;
+            int heightA4 = widthA4 * 210 / 297;
+            int widthA5 = widthA4 - 2 * 100;
+            int heightA5 = widthA5 * 148 / 210;
+            int widthA6 = widthA5 - 2 * 80;
+            int heightA6 = widthA6 * 105 / 148;
+            int widthCCCD = widthA6 - 2 * 100;
+            int heightCCCD = (int) (widthCCCD * 53.98 / 85.6);
+            ViewGroup.LayoutParams layoutParamsA4 = frameLayoutA4.getLayoutParams();
+            ViewGroup.LayoutParams layoutParamsA5 = frameLayoutA5.getLayoutParams();
+            ViewGroup.LayoutParams layoutParamsA6 = frameLayoutA6.getLayoutParams();
+            ViewGroup.LayoutParams layoutParamsCCCD = frameLayoutCCCD.getLayoutParams();
+            layoutParamsA4.width = widthA4;
+            layoutParamsA4.height = heightA4;
+            frameLayoutA4.setLayoutParams(layoutParamsA4);
+
+            layoutParamsA5.width = widthA5;
+            layoutParamsA5.height = heightA5;
+            frameLayoutA5.setLayoutParams(layoutParamsA5);
+
+            layoutParamsA6.width = widthA6;
+            layoutParamsA6.height = heightA6;
+            frameLayoutA6.setLayoutParams(layoutParamsA6);
+
+            layoutParamsCCCD.width = widthCCCD;
+            layoutParamsCCCD.height = heightCCCD;
+            frameLayoutCCCD.setLayoutParams(layoutParamsCCCD);
+        });
+    }
+
+    //Hàm để config ẩn/hiện các frame
+    protected void configShowFrame(PaperSize paperSize) {
+        switch (paperSize) {
+            case ALL:
+                // Xử lý khi chọn "all"
+                frames.forEach(frameLayout -> {
+                    frameLayout.setVisibility(View.VISIBLE);
+                });
+                break;
+            case A4:
+                // Xử lý khi chọn "a4"
+                showOnlyFrame(frameLayoutA4);
+                break;
+            case A5:
+                // Xử lý khi chọn "a5"
+                showOnlyFrame(frameLayoutA5);
+                break;
+            case A6:
+                // Xử lý khi chọn "a6"
+                showOnlyFrame(frameLayoutA6);
+                break;
+            case CCCD:
+                // Xử lý khi chọn "cccd"
+                showOnlyFrame(frameLayoutCCCD);
+                break;
+            case NONE:
+                // Xử lý khi chọn "None"
+                frames.forEach(frameLayout -> {
+                    frameLayout.setVisibility(View.INVISIBLE);
+                });
+                break;
+            default:
+                // Xử lý khi không trùng với bất kỳ case nào
+                break;
+        }
+    }
+
+    //Hàm để hiển thị duy nhất 1 frame chỉ định
+    protected void showOnlyFrame(FrameLayout fL) {
+        frames.forEach(frameLayout -> {
+            if (frameLayout == fL) {
+                frameLayout.setVisibility(View.VISIBLE);
+            } else {
+                frameLayout.setVisibility(View.INVISIBLE);
             }
-            catch (Exception e){
-                // Camera is not available (in use or does not exist)
-                Log.d(TAG, "openCamera: " +e.getMessage());
-            }
-            return cam;
+        });
+    }
+
+    private Camera openCamera() {
+        Camera cam = null;
+        try {
+            cam = Camera.open(0); // attempt to get a Camera instance
+        } catch (Exception e) {
+            // Camera is not available (in use or does not exist)
+            Log.d(TAG, "openCamera: " + e.getMessage());
+        }
+        return cam;
     }
 
     public void onClickCapture(View view) {
 //        capturePhoto();
-        takePicture();
+//        takePicture();
+
+        Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.img);
+        bitmaps.add(bitmap);
+
     }
 
-    private void takePicture(){
+    public void onClickDone(View view) {
+        PDFGenerator pdfGenerator = new PDFGenerator();
+        PdfDocument pdfDocument = pdfGenerator.initFromBitmaps(bitmaps);
+        try {
+            pdfGenerator.saveDocumentToStorage(pdfDocument);
+            Toast.makeText(this, "Make pdf success", Toast.LENGTH_SHORT).show();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    public void onClickChangePaperSize(View view) {
+        currentSize = changePaperSizeSequentially(currentSize);
+        configShowFrame(currentSize);
+    }
+
+    private void takePicture() {
         cam.takePicture(null, null, new Camera.PictureCallback() {
             @Override
             public void onPictureTaken(byte[] bytes, Camera camera) {
                 Matrix matrix = new Matrix();
                 matrix.setRotate(90f);
                 Bitmap bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length, null);
-                Bitmap bitmap1 = Bitmap.createBitmap(bitmap, 0,0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
+                Bitmap bitmap1 = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
 
                 Rect rect = new Rect();
-                frameLayout.getGlobalVisibleRect(rect);
-                Bitmap bitmap2 = Bitmap.createBitmap(bitmap1, Math.round(frameLayout.getX()), Math.round(frameLayout.getY()), rect.width(), rect.height(), null, true);
+                frameLayoutA4.getGlobalVisibleRect(rect);
+                Bitmap bitmap2 = Bitmap.createBitmap(bitmap1, Math.round(frameLayoutA4.getX()), Math.round(frameLayoutA4.getY()), rect.width(), rect.height(), null, true);
 
                 MainActivity.bit = bitmap2;
-                            MainActivity.bitReal = bitmap1;
-                            Intent intent = new Intent(CameraActivity.this, MainActivity.class);
-                            setResult(RESULT_OK, intent);
-                            finish();
+                MainActivity.bitReal = bitmap1;
+                Intent intent = new Intent(CameraActivity.this, MainActivity.class);
+                setResult(RESULT_OK, intent);
+                finish();
             }
         });
+    }
+
+    //Hàm để fake action tạo paper size
+    protected PaperSize getRandomSize() {
+        PaperSize[] sizes = PaperSize.values();
+        Random random = new Random();
+
+        // Chọn ngẫu nhiên một giá trị từ enum
+        PaperSize randomSize = sizes[random.nextInt(sizes.length)];
+        return randomSize;
     }
 
     @Override
@@ -151,3 +261,4 @@ import java.util.concurrent.ExecutionException;
         cam.release();
     }
 }
+
