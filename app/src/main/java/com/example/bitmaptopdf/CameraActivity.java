@@ -10,6 +10,8 @@ import android.graphics.Rect;
 import android.graphics.pdf.PdfDocument;
 import android.hardware.Camera;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Display;
@@ -23,6 +25,7 @@ import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
@@ -43,12 +46,14 @@ public class CameraActivity extends AppCompatActivity {
     private Camera cam = null;
     private final List<FrameLayout> frames = new ArrayList<>();
     PaperSize currentSize = PaperSize.A4;
+    int papeNumber = 1;
     List<Bitmap> bitmaps = new ArrayList<>();
     private FrameLayout frameLayoutA4, previewView;
     private FrameLayout frameLayoutA5;
     private FrameLayout frameLayoutA6;
     private FrameLayout frameLayoutCCCD;
     private CameraPreview cameraPreview;
+    private TextView textViewPageNumber;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,7 +61,9 @@ public class CameraActivity extends AppCompatActivity {
         setContentView(R.layout.activity_camera);
         setUpViewFrame();
         configShowFrame(currentSize);
-
+        setUpCamera();
+    }
+    protected void setUpCamera(){
         DisplayMetrics displayMetrics = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
 
@@ -71,8 +78,6 @@ public class CameraActivity extends AppCompatActivity {
         cameraPreview.setScaleX(-1f);
         previewView.addView(cameraPreview);
         Camera.Parameters parameters = cam.getParameters();
-        Log.d(TAG, "Img width: " + parameters.getPictureSize().width);
-        Log.d(TAG, "Img height: " + parameters.getPictureSize().height);
         parameters.setPreviewSize(1920, 1080);
         parameters.setPictureSize(1920, 1080);
         cam.setParameters(parameters);
@@ -85,6 +90,7 @@ public class CameraActivity extends AppCompatActivity {
         frameLayoutA5 = findViewById(R.id.frameA5);
         frameLayoutA6 = findViewById(R.id.frameA6);
         frameLayoutCCCD = findViewById(R.id.frameCCCD);
+        textViewPageNumber = findViewById(R.id.txtPageNumber);
         frames.add(frameLayoutA4);
         frames.add(frameLayoutA5);
         frames.add(frameLayoutA6);
@@ -187,7 +193,13 @@ public class CameraActivity extends AppCompatActivity {
     }
 
     public void onClickCapture(View view) {
-        takePicture();
+        takePicture(() -> {
+            int countPage = bitmaps.size();
+            setTextCount(countPage);
+            if (bitmaps.size() >= papeNumber) {
+                onClickDone(view);
+            }
+        });
     }
 
     public void onClickDone(View view) {
@@ -209,7 +221,7 @@ public class CameraActivity extends AppCompatActivity {
         showPaperSizeDialog();
     }
 
-    private void takePicture() {
+    private void takePicture(CallBackCaptureDone callBackCaptureDone) {
         try {
             cam.takePicture(null, null, new Camera.PictureCallback() {
                 @Override
@@ -225,6 +237,13 @@ public class CameraActivity extends AppCompatActivity {
                 frameLayout.getGlobalVisibleRect(rect);
                 Bitmap bitmap2 = Bitmap.createBitmap(bitmap1, Math.round(frameLayout.getX()), Math.round(frameLayout.getY()), rect.width(), rect.height(), null, true);
                 bitmaps.add(bitmap2);
+                callBackCaptureDone.done();
+
+//                    MainActivity.bit = bitmap2;
+//                    MainActivity.bitReal = bitmap1;
+//                    Intent intent = new Intent(CameraActivity.this, MainActivity.class);
+//                    setResult(RESULT_OK, intent);
+//                    finish();
                 }
             });
         }catch (Exception e){
@@ -232,16 +251,6 @@ public class CameraActivity extends AppCompatActivity {
         }
         Log.d(TAG, "takePicture: " + cam);
 
-    }
-
-    //Hàm để fake action tạo paper size
-    protected PaperSize getRandomSize() {
-        PaperSize[] sizes = PaperSize.values();
-        Random random = new Random();
-
-        // Chọn ngẫu nhiên một giá trị từ enum
-        PaperSize randomSize = sizes[random.nextInt(sizes.length)];
-        return randomSize;
     }
 
     private void showPaperSizeDialog() {
@@ -253,7 +262,6 @@ public class CameraActivity extends AppCompatActivity {
                 .setView(dialogView);
         AlertDialog dialog = builder.create();
         PaperSize paperSize = currentSize;
-        final EditText pageNumberEditText = dialogView.findViewById(R.id.pageNumberEditText);
         final Button buttonSubmit = dialogView.findViewById(R.id.btnSubmitPaperSize);
         final Button buttonCancel = dialogView.findViewById(R.id.btnCancelPaperSize);
         final RadioGroup radioGroup = dialogView.findViewById(R.id.radioGroupPaperSize);
@@ -261,6 +269,7 @@ public class CameraActivity extends AppCompatActivity {
         final RadioButton radioButtonA5 = radioGroup.findViewById(R.id.radioBtnA5);
         final RadioButton radioButtonA6 = radioGroup.findViewById(R.id.radioBtnA6);
         final RadioButton radioButtonCCCD = radioGroup.findViewById(R.id.radioBtnCCCD);
+        final EditText edtNumPage = dialogView.findViewById(R.id.pageNumberEditText);
         if (currentSize == PaperSize.A4){
             radioButtonA4.setChecked(true);
         }else if (currentSize == PaperSize.A5){
@@ -272,6 +281,12 @@ public class CameraActivity extends AppCompatActivity {
         }
         buttonSubmit.setOnClickListener(view -> {
             Log.d("On Choosen Paper Size" , currentSize.value);
+            try {
+                papeNumber = Integer.parseInt(edtNumPage.getText().toString());
+            } catch (Exception e){
+                papeNumber = 1;
+            }
+            setTextCount(0);
             configShowFrame(currentSize);
             dialog.dismiss();
         });
@@ -310,6 +325,10 @@ public class CameraActivity extends AppCompatActivity {
         return frameLayoutA4;
     }
 
+    protected void setTextCount(int countPage){
+        textViewPageNumber.setText( countPage +"/" + papeNumber);
+    }
+
     @Override
     protected void onDestroy() {
         super.onDestroy();
@@ -319,3 +338,7 @@ public class CameraActivity extends AppCompatActivity {
     }
 }
 
+
+interface CallBackCaptureDone {
+    void done();
+}
