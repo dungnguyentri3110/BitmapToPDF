@@ -16,16 +16,17 @@ public class PDFGenerator {
 
     public PdfDocument initFromBitmaps(@NonNull List<Bitmap> imgPath) {
         PdfDocument document = new PdfDocument();
-        float pageWidth = imgPath.get(0).getWidth();
-        float pageHeight = pageWidth * 297 / 210;
+        int pageWidth = imgPath.get(0).getWidth();
+        int pageHeight = (int) (pageWidth * 297 / 210);
 
         for (int i = 0; i < imgPath.size(); i++) {
             //Khởi tạo page
             Bitmap bitmap = imgPath.get(i);
-            PdfDocument.PageInfo pageInfo = new PdfDocument.PageInfo.Builder(bitmap.getWidth(), bitmap.getHeight(), i + 1).create();
+            PdfDocument.PageInfo pageInfo = new PdfDocument.PageInfo.Builder(pageWidth, pageHeight, i + 1).create();
             PdfDocument.Page page = document.startPage(pageInfo);
             Canvas canvas = page.getCanvas();
-            canvas.drawBitmap(bitmap, 0f, 0f, null);
+            int top = (pageHeight - bitmap.getHeight()) / 2;
+            canvas.drawBitmap(bitmap, 0f, top, null);
             document.finishPage(page);
         }
         return document;

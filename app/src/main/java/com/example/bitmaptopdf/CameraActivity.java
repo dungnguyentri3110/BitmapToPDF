@@ -108,13 +108,13 @@ public class CameraActivity extends AppCompatActivity {
 
         frameLayoutA4.getViewTreeObserver().addOnGlobalLayoutListener(() -> {
             int widthA4 = screenWidth - 100 * 2;
-            int heightA4 = widthA4 * 210 / 297;
+            int heightA4 = widthA4 * 297 / 210;
             int widthA5 = widthA4 - 2 * 100;
-            int heightA5 = widthA5 * 148 / 210;
+            int heightA5 = widthA5 * 210 / 148;
             int widthA6 = widthA5 - 2 * 80;
-            int heightA6 = widthA6 * 105 / 148;
+            int heightA6 = widthA6 * 148 / 105;
             int widthCCCD = widthA6 - 2 * 100;
-            int heightCCCD = (int) (widthCCCD * 53.98 / 85.6);
+            int heightCCCD = (int) (widthCCCD * 85.6 / 53.98);
             ViewGroup.LayoutParams layoutParamsA4 = frameLayoutA4.getLayoutParams();
             ViewGroup.LayoutParams layoutParamsA5 = frameLayoutA5.getLayoutParams();
             ViewGroup.LayoutParams layoutParamsA6 = frameLayoutA6.getLayoutParams();

@@ -17,7 +17,7 @@
 
     <RelativeLayout
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
         app:layout_constraintBottom_toBottomOf="@+id/previewCamera"
         app:layout_constraintLeft_toLeftOf="@+id/previewCamera"
         app:layout_constraintRight_toRightOf="@+id/previewCamera"
@@ -25,16 +25,17 @@
 
         <FrameLayout
             android:id="@+id/frameA4"
-            android:layout_width="297dp"
-            android:layout_height="210dp"
+            android:layout_width="210dp"
+            android:layout_height="297dp"
             android:layout_centerInParent="true"
             android:background="@drawable/bg_frame">
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_gravity="center_vertical|end"
-                android:rotation="270"
+                android:layout_gravity="center_horizontal|bottom"
+                android:layout_marginBottom="20dp"
+                android:rotation="0"
                 android:text="Khổ A4"
                 android:textSize="18sp"
                 android:textStyle="bold" />
@@ -42,16 +43,17 @@
 
         <FrameLayout
             android:id="@+id/frameA5"
-            android:layout_width="210dp"
-            android:layout_height="148dp"
+            android:layout_width="148dp"
+            android:layout_height="210dp"
             android:layout_centerInParent="true"
             android:background="@drawable/bg_frame">
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_gravity="center_vertical|end"
-                android:rotation="270"
+                android:layout_gravity="center_horizontal|bottom"
+                android:layout_marginBottom="20dp"
+                android:rotation="0"
                 android:text="Khổ A5"
                 android:textSize="18sp"
                 android:textStyle="bold" />
@@ -59,16 +61,17 @@
 
         <FrameLayout
             android:id="@+id/frameA6"
-            android:layout_width="148dp"
-            android:layout_height="105dp"
+            android:layout_width="105dp"
+            android:layout_height="148dp"
             android:layout_centerInParent="true"
             android:background="@drawable/bg_frame">
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_gravity="center_vertical|end"
-                android:rotation="270"
+                android:layout_gravity="center_horizontal|bottom"
+                android:layout_marginBottom="20dp"
+                android:rotation="0"
                 android:text="Khổ A6"
                 android:textSize="18sp"
                 android:textStyle="bold" />
@@ -76,16 +79,17 @@
 
         <FrameLayout
             android:id="@+id/frameCCCD"
-            android:layout_width="85.6dp"
-            android:layout_height="53.98dp"
+            android:layout_width="53.98dp"
+            android:layout_height="85.6dp"
             android:layout_centerInParent="true"
             android:background="@drawable/bg_frame">
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_gravity="center_vertical|end"
-                android:rotation="270"
+                android:layout_gravity="center_horizontal|bottom"
+                android:layout_marginBottom="20dp"
+                android:rotation="0"
                 android:text="CCCD"
                 android:textSize="18sp"
                 android:textStyle="bold" />
@@ -96,7 +100,7 @@
             android:layout_height="wrap_content"
             android:layout_alignBottom="@id/frameA4"
             android:layout_centerHorizontal="true"
-            android:layout_marginBottom="10dp"
+            android:layout_marginBottom="-100dp"
             android:text="Vị trí đặt giấy tờ Scan"
             android:textSize="40sp"
             android:textStyle="bold" />
