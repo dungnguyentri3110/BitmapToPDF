@@ -44,17 +44,18 @@ public class CameraPreview extends TextureView implements TextureView.SurfaceTex
 
     @Override
     public void onSurfaceTextureSizeChanged(@NonNull SurfaceTexture surfaceTexture, int i, int i1) {
-
+        Log.d(TAG, "onSurfaceTextureSizeChanged: ");
     }
 
     @Override
     public boolean onSurfaceTextureDestroyed(@NonNull SurfaceTexture surfaceTexture) {
         Log.d(TAG, "onSurfaceTextureDestroyed: ");
         surfaceTexture.release();
-        return true;
+        return false;
     }
 
     @Override
     public void onSurfaceTextureUpdated(@NonNull SurfaceTexture surfaceTexture) {
+//        Log.d(TAG, "onSurfaceTextureUpdated: ");
     }
 }

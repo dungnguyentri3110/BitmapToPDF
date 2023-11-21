@@ -34,7 +34,7 @@ public class PDFGenerator {
 
     public void saveDocumentToStorage(PdfDocument document) throws IOException {
         long timeStamp = System.currentTimeMillis();
-        File file = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), "DOCUMENT_01" + ".pdf");
+        File file = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), "DOCUMENT_01_"+timeStamp + ".pdf");
         if (file.exists()) {
             file.delete();
         }

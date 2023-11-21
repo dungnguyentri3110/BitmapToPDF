@@ -1,6 +1,7 @@
 package com.example.bitmaptopdf;
 
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -9,14 +10,22 @@ import android.graphics.Rect;
 import android.graphics.pdf.PdfDocument;
 import android.hardware.Camera;
 import android.os.Bundle;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Display;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.FrameLayout;
+import android.widget.LinearLayout;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
 import android.widget.Toast;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.camera.core.ExperimentalUseCaseGroup;
 import androidx.camera.view.TransformExperimental;
@@ -31,9 +40,9 @@ import java.util.Random;
 public class CameraActivity extends AppCompatActivity {
     public static final String TAG = ">>>>>" + CameraActivity.class.getSimpleName();
 
-    private final Camera cam = null;
+    private Camera cam = null;
     private final List<FrameLayout> frames = new ArrayList<>();
-    PaperSize currentSize = PaperSize.ALL;
+    PaperSize currentSize = PaperSize.A4;
     List<Bitmap> bitmaps = new ArrayList<>();
     private FrameLayout frameLayoutA4, previewView;
     private FrameLayout frameLayoutA5;
@@ -41,52 +50,33 @@ public class CameraActivity extends AppCompatActivity {
     private FrameLayout frameLayoutCCCD;
     private CameraPreview cameraPreview;
 
-    // Hàm để thay đổi lần lượt giá trị của enum PaperSize
-    private static PaperSize changePaperSizeSequentially(PaperSize currentSize) {
-        // Lấy danh sách tất cả các giá trị của enum
-        PaperSize[] sizes = PaperSize.values();
-
-        // Tìm vị trí của giá trị hiện tại trong mảng
-        int currentIndex = -1;
-        for (int i = 0; i < sizes.length; i++) {
-            if (sizes[i] == currentSize) {
-                currentIndex = i;
-                break;
-            }
-        }
-
-        // Chuyển đến giá trị tiếp theo trong mảng (lặp lại nếu đã ở cuối mảng)
-        int nextIndex = (currentIndex + 1) % sizes.length;
-
-        // Trả về giá trị mới
-        return sizes[nextIndex];
-    }
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_camera);
         setUpViewFrame();
-        configShowFrame(PaperSize.ALL);
+        configShowFrame(currentSize);
 
-//        DisplayMetrics displayMetrics = new DisplayMetrics();
-//        getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
-//
-//        int width = displayMetrics.widthPixels;
-//        int height = width*16/9;
-//        LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(width, height);
-        //Xét preview cho camera
-//        cam = openCamera();
-//        previewView = findViewById(R.id.previewCamera);
-//        previewView.setLayoutParams(layoutParams);
-//        cameraPreview = new CameraPreview(this, cam);
-//        cameraPreview.setScaleX(-1f);
-//        previewView.addView(cameraPreview);
-//        Camera.Parameters parameters = cam.getParameters();
-//        Log.d(TAG, "Img width: " + parameters.getPictureSize().width);
-//        Log.d(TAG, "Img height: " + parameters.getPictureSize().height);
-//        cam.setParameters(parameters);
-//        cam.setDisplayOrientation(270);
+        DisplayMetrics displayMetrics = new DisplayMetrics();
+        getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+
+        int width = displayMetrics.widthPixels;
+        int height = width*16/9;
+        LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(width, height);
+//        Xét preview cho camera
+        cam = openCamera();
+        previewView = findViewById(R.id.previewCamera);
+        previewView.setLayoutParams(layoutParams);
+        cameraPreview = new CameraPreview(this, cam);
+        cameraPreview.setScaleX(-1f);
+        previewView.addView(cameraPreview);
+        Camera.Parameters parameters = cam.getParameters();
+        Log.d(TAG, "Img width: " + parameters.getPictureSize().width);
+        Log.d(TAG, "Img height: " + parameters.getPictureSize().height);
+        parameters.setPreviewSize(1920, 1080);
+        parameters.setPictureSize(1920, 1080);
+        cam.setParameters(parameters);
+        cam.setDisplayOrientation(270);
     }
 
     //Hàm để cài đặt view cho các Frame
@@ -188,7 +178,7 @@ public class CameraActivity extends AppCompatActivity {
     private Camera openCamera() {
         Camera cam = null;
         try {
-            cam = Camera.open(0); // attempt to get a Camera instance
+            cam = Camera.open(1); // attempt to get a Camera instance
         } catch (Exception e) {
             // Camera is not available (in use or does not exist)
             Log.d(TAG, "openCamera: " + e.getMessage());
@@ -197,12 +187,7 @@ public class CameraActivity extends AppCompatActivity {
     }
 
     public void onClickCapture(View view) {
-//        capturePhoto();
-//        takePicture();
-
-        Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.img);
-        bitmaps.add(bitmap);
-
+        takePicture();
     }
 
     public void onClickDone(View view) {
@@ -211,6 +196,9 @@ public class CameraActivity extends AppCompatActivity {
         try {
             pdfGenerator.saveDocumentToStorage(pdfDocument);
             Toast.makeText(this, "Make pdf success", Toast.LENGTH_SHORT).show();
+            Intent intent = new Intent(CameraActivity.this, MainActivity.class);
+            setResult(RESULT_OK, intent);
+            finish();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -218,30 +206,32 @@ public class CameraActivity extends AppCompatActivity {
     }
 
     public void onClickChangePaperSize(View view) {
-        currentSize = changePaperSizeSequentially(currentSize);
-        configShowFrame(currentSize);
+        showPaperSizeDialog();
     }
 
     private void takePicture() {
-        cam.takePicture(null, null, new Camera.PictureCallback() {
-            @Override
-            public void onPictureTaken(byte[] bytes, Camera camera) {
+        try {
+            cam.takePicture(null, null, new Camera.PictureCallback() {
+                @Override
+                public void onPictureTaken(byte[] bytes, Camera camera) {
+                    cam.startPreview();
                 Matrix matrix = new Matrix();
                 matrix.setRotate(90f);
                 Bitmap bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length, null);
                 Bitmap bitmap1 = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
 
                 Rect rect = new Rect();
-                frameLayoutA4.getGlobalVisibleRect(rect);
-                Bitmap bitmap2 = Bitmap.createBitmap(bitmap1, Math.round(frameLayoutA4.getX()), Math.round(frameLayoutA4.getY()), rect.width(), rect.height(), null, true);
+                FrameLayout frameLayout = getFrameFromSize(currentSize);
+                frameLayout.getGlobalVisibleRect(rect);
+                Bitmap bitmap2 = Bitmap.createBitmap(bitmap1, Math.round(frameLayout.getX()), Math.round(frameLayout.getY()), rect.width(), rect.height(), null, true);
+                bitmaps.add(bitmap2);
+                }
+            });
+        }catch (Exception e){
+            Log.d(TAG, "takePicture: " + e);
+        }
+        Log.d(TAG, "takePicture: " + cam);
 
-                MainActivity.bit = bitmap2;
-                MainActivity.bitReal = bitmap1;
-                Intent intent = new Intent(CameraActivity.this, MainActivity.class);
-                setResult(RESULT_OK, intent);
-                finish();
-            }
-        });
     }
 
     //Hàm để fake action tạo paper size
@@ -254,9 +244,76 @@ public class CameraActivity extends AppCompatActivity {
         return randomSize;
     }
 
+    private void showPaperSizeDialog() {
+        // Sử dụng LayoutInflater để nạp layout tùy chỉnh cho dialog
+        LayoutInflater inflater = getLayoutInflater();
+        View dialogView = inflater.inflate(R.layout.dialog_paper_size, null);
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Choose Paper Size")
+                .setView(dialogView);
+        AlertDialog dialog = builder.create();
+        PaperSize paperSize = currentSize;
+        final EditText pageNumberEditText = dialogView.findViewById(R.id.pageNumberEditText);
+        final Button buttonSubmit = dialogView.findViewById(R.id.btnSubmitPaperSize);
+        final Button buttonCancel = dialogView.findViewById(R.id.btnCancelPaperSize);
+        final RadioGroup radioGroup = dialogView.findViewById(R.id.radioGroupPaperSize);
+        final RadioButton radioButtonA4 = radioGroup.findViewById(R.id.radioBtnA4);
+        final RadioButton radioButtonA5 = radioGroup.findViewById(R.id.radioBtnA5);
+        final RadioButton radioButtonA6 = radioGroup.findViewById(R.id.radioBtnA6);
+        final RadioButton radioButtonCCCD = radioGroup.findViewById(R.id.radioBtnCCCD);
+        if (currentSize == PaperSize.A4){
+            radioButtonA4.setChecked(true);
+        }else if (currentSize == PaperSize.A5){
+            radioButtonA5.setChecked(true);
+        } else if (currentSize == PaperSize.A6){
+            radioButtonA6.setChecked(true);
+        } else if (currentSize == PaperSize.CCCD){
+            radioButtonCCCD.setChecked(true);
+        }
+        buttonSubmit.setOnClickListener(view -> {
+            Log.d("On Choosen Paper Size" , currentSize.value);
+            configShowFrame(currentSize);
+            dialog.dismiss();
+        });
+        buttonCancel.setOnClickListener(view -> {
+            currentSize = paperSize;
+            dialog.dismiss();
+        });
+        radioGroup.setOnCheckedChangeListener((radioGroup1, i) -> {
+            Log.d("Selected Paper Size " ,  " " + i);
+
+            if (i == R.id.radioBtnA4) {
+                currentSize = PaperSize.A4;
+            } else if (i == R.id.radioBtnA5) {
+                currentSize = PaperSize.A5;
+            }if (i == R.id.radioBtnA6) {
+                currentSize = PaperSize.A6;
+            }if (i == R.id.radioBtnCCCD) {
+                currentSize = PaperSize.CCCD;
+            }
+
+        });
+        dialog.show();
+    }
+
+    protected FrameLayout getFrameFromSize(PaperSize paperSize) {
+        switch (paperSize) {
+            case A4:
+                return frameLayoutA4;
+            case A5:
+                return frameLayoutA5;
+            case A6:
+                return frameLayoutA6;
+            case CCCD:
+                return frameLayoutCCCD;
+        }
+        return frameLayoutA4;
+    }
+
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        Log.d(TAG, "onDestroy: '");
         cam.stopPreview();
         cam.release();
     }
