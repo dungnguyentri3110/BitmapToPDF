@@ -101,6 +101,8 @@ import java.util.concurrent.ExecutionException;
         Camera.Parameters parameters = cam.getParameters();
         Log.d(TAG, "Img width: " + parameters.getPictureSize().width);
         Log.d(TAG, "Img height: " + parameters.getPictureSize().height);
+        parameters.setPreviewSize(1920, 1080);
+        parameters.setPictureSize(1920, 1080);
         cam.setParameters(parameters);
         cam.setDisplayOrientation(270);
     }
@@ -108,7 +110,7 @@ import java.util.concurrent.ExecutionException;
     private Camera openCamera(){
         Camera  cam = null;
             try {
-                cam = Camera.open(0); // attempt to get a Camera instance
+                cam = Camera.open(1); // attempt to get a Camera instance
             }
             catch (Exception e){
                 // Camera is not available (in use or does not exist)
@@ -136,10 +138,10 @@ import java.util.concurrent.ExecutionException;
                 Bitmap bitmap2 = Bitmap.createBitmap(bitmap1, Math.round(frameLayout.getX()), Math.round(frameLayout.getY()), rect.width(), rect.height(), null, true);
 
                 MainActivity.bit = bitmap2;
-                            MainActivity.bitReal = bitmap1;
-                            Intent intent = new Intent(CameraActivity.this, MainActivity.class);
-                            setResult(RESULT_OK, intent);
-                            finish();
+                MainActivity.bitReal = bitmap1;
+                Intent intent = new Intent(CameraActivity.this, MainActivity.class);
+                setResult(RESULT_OK, intent);
+                finish();
             }
         });
     }

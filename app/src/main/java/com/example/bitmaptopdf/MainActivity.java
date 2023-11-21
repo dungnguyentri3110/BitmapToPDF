@@ -11,6 +11,7 @@ import androidx.camera.view.TransformExperimental;
 import androidx.constraintlayout.widget.ConstraintLayout;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -92,62 +93,64 @@ import java.util.Map;
     }
 
     public void onClickConvert(View view) {
-//        Intent intent = new Intent(this, CameraActivity.class);
-////        startActivity(intent);
-//        startActivityForResult(intent, 10);
+        @SuppressLint("UnsafeOptInUsageError") Intent intent = new Intent(this, CameraActivity.class);
+//        startActivity(intent);
+        startActivityForResult(intent, 10);
 
         //TODO: TẠO PDF
-        List<Bitmap> bitmaps = new ArrayList<>();
-        Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.img);
-        bitmaps.add(bitmap);
-        bitmaps.add(bitmap);
-        bitmaps.add(bitmap);
+//        List<Bitmap> bitmaps = new ArrayList<>();
+//        Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.img);
 //        bitmaps.add(bitmap);
-        convertToPdf(bitmaps);
+//        bitmaps.add(bitmap);
+//        bitmaps.add(bitmap);
+////        bitmaps.add(bitmap);
+//        convertToPdf(bitmaps);
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if(requestCode == 10 && resultCode == RESULT_OK){
-            Log.d("Nhay vao main nhe", "onActivityResult: ");
-            img.setImageBitmap(bit);
-            imageReal.setImageBitmap(bitReal);
-
-            if(bitReal != null){
-                File fileReal = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), "imgReal.jpg");
-                if(fileReal.exists()){
-                    fileReal.delete();
-                }
-                try {
-                    FileOutputStream out = new FileOutputStream(fileReal);
-                    bitReal.compress(Bitmap.CompressFormat.JPEG, 100, out);
-                    out.flush();
-                    out.close();
-
-                } catch (FileNotFoundException e) {
-                    throw new RuntimeException(e);
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-            }
-            if(bit != null){
-                File file = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), "imgCrop.jpg");
-                if(file.exists()){
-                    file.delete();
-                }
-                try {
-                    FileOutputStream out = new FileOutputStream(file);
-                    bit.compress(Bitmap.CompressFormat.JPEG, 100, out);
-                    out.flush();
-                    out.close();
-
-                } catch (FileNotFoundException e) {
-                    throw new RuntimeException(e);
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-            }
-        }
+        img.setImageBitmap(bit);
+        imageReal.setImageBitmap(bitReal);
+//        if(requestCode == 10 && resultCode == RESULT_OK){
+//            Log.d("Nhay vao main nhe", "onActivityResult: ");
+//            img.setImageBitmap(bit);
+//            imageReal.setImageBitmap(bitReal);
+//
+//            if(bitReal != null){
+//                File fileReal = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), "imgReal.jpg");
+//                if(fileReal.exists()){
+//                    fileReal.delete();
+//                }
+//                try {
+//                    FileOutputStream out = new FileOutputStream(fileReal);
+//                    bitReal.compress(Bitmap.CompressFormat.JPEG, 100, out);
+//                    out.flush();
+//                    out.close();
+//
+//                } catch (FileNotFoundException e) {
+//                    throw new RuntimeException(e);
+//                } catch (IOException e) {
+//                    throw new RuntimeException(e);
+//                }
+//            }
+//            if(bit != null){
+//                File file = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), "imgCrop.jpg");
+//                if(file.exists()){
+//                    file.delete();
+//                }
+//                try {
+//                    FileOutputStream out = new FileOutputStream(file);
+//                    bit.compress(Bitmap.CompressFormat.JPEG, 100, out);
+//                    out.flush();
+//                    out.close();
+//
+//                } catch (FileNotFoundException e) {
+//                    throw new RuntimeException(e);
+//                } catch (IOException e) {
+//                    throw new RuntimeException(e);
+//                }
+//            }
+//        }
     }
 }
