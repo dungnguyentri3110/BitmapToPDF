@@ -19,6 +19,7 @@ import android.view.Display;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
@@ -50,7 +51,7 @@ public class CameraActivity extends AppCompatActivity {
 
     private Camera cam = null;
     private final List<FrameLayout> frames = new ArrayList<>();
-    PaperSize currentSize = PaperSize.A5;
+    PaperSize currentSize = PaperSize.A4;
     int papeNumber = 5;
     List<Bitmap> bitmaps = new ArrayList<>();
     private FrameLayout frameLayoutA4, previewView;
@@ -60,13 +61,25 @@ public class CameraActivity extends AppCompatActivity {
     private CameraPreview cameraPreview;
     private TextView textViewPageNumber;
 
+    private int MARGIN_FRAME = 50;
+    private double RATIO_FRAME_A4 = 297.0 / 210.0;
+    private double RATIO_FRAME_A5 = 210.0 / 148.0;
+    private double RATIO_FRAME_A6 =  148.0 / 105.0;
+    private double RATIO_FRAME_CCCD = 85.6 / 53.98;
+
+    private ViewTreeObserver.OnGlobalLayoutListener lis = new ViewTreeObserver.OnGlobalLayoutListener() {
+        @Override
+        public void onGlobalLayout() {
+            addListenerLoadViewFrame();
+        }
+    };
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_camera);
-        setUpViewFrame();
-        configShowFrame(currentSize);
         setUpCamera();
+        setUpViewFrame();
     }
     protected void setUpCamera(){
         DisplayMetrics displayMetrics = new DisplayMetrics();
@@ -119,35 +132,7 @@ public class CameraActivity extends AppCompatActivity {
         // Lấy kích thước của màn hình
         int screenWidth = display.getWidth();
 
-        frameLayoutA4.getViewTreeObserver().addOnGlobalLayoutListener(() -> {
-            int widthA4 = previewView.getWidth() - 100 * 2;
-            int heightA4 = widthA4 * 297 / 210;
-            int widthA5 = widthA4 - 2 * 100;
-            int heightA5 = widthA5 * 210 / 148;
-            int widthA6 = widthA5 - 2 * 80;
-            int heightA6 = widthA6 * 148 / 105;
-            int widthCCCD = widthA6 - 2 * 100;
-            int heightCCCD = (int) (widthCCCD * 85.6 / 53.98);
-            ViewGroup.LayoutParams layoutParamsA4 = frameLayoutA4.getLayoutParams();
-            ViewGroup.LayoutParams layoutParamsA5 = frameLayoutA5.getLayoutParams();
-            ViewGroup.LayoutParams layoutParamsA6 = frameLayoutA6.getLayoutParams();
-            ViewGroup.LayoutParams layoutParamsCCCD = frameLayoutCCCD.getLayoutParams();
-            layoutParamsA4.width = widthA4;
-            layoutParamsA4.height = heightA4;
-            frameLayoutA4.setLayoutParams(layoutParamsA4);
-
-            layoutParamsA5.width = widthA5;
-            layoutParamsA5.height = heightA5;
-            frameLayoutA5.setLayoutParams(layoutParamsA5);
-
-            layoutParamsA6.width = widthA6;
-            layoutParamsA6.height = heightA6;
-            frameLayoutA6.setLayoutParams(layoutParamsA6);
-
-            layoutParamsCCCD.width = widthCCCD;
-            layoutParamsCCCD.height = heightCCCD;
-            frameLayoutCCCD.setLayoutParams(layoutParamsCCCD);
-        });
+        previewView.getViewTreeObserver().addOnGlobalLayoutListener(lis);
     }
 
     //Hàm để config ẩn/hiện các frame
@@ -258,7 +243,7 @@ public class CameraActivity extends AppCompatActivity {
                 float ratioY = (float) cameraPreviewSize.height/(float)previewView.getWidth();
 
                 int top = Math.round(ratioX*frameLayout.getTop());
-                int left = Math.round(ratioY*frameLayout.getLeft() + 100*ratioY) ;
+                int left = Math.round(ratioY*frameLayout.getLeft() + MARGIN_FRAME*ratioY) ;
                 int width = Math.round(frameLayout.getWidth()*ratioY);
                 int height = Math.round(frameLayout.getHeight()*ratioX);
                 Bitmap bitmap2 = Bitmap.createBitmap(bitmap1, left, top, width, height, null, true);
@@ -349,6 +334,40 @@ public class CameraActivity extends AppCompatActivity {
                 return frameLayoutCCCD;
         }
         return frameLayoutA4;
+    }
+
+    protected void addListenerLoadViewFrame(){
+        int widthA4 = previewView.getWidth() - MARGIN_FRAME * 2;
+        int heightA4 = (int)(widthA4 * RATIO_FRAME_A4);
+        int widthA5 = widthA4 - 2 * 100;
+        int heightA5 = (int)(widthA5 * RATIO_FRAME_A5);
+        int widthA6 = widthA5 - 2 * 80;
+        int heightA6 = (int)(widthA6 * RATIO_FRAME_A6);
+        int widthCCCD = widthA6 - 2 * 100;
+        int heightCCCD = (int) (widthCCCD * RATIO_FRAME_CCCD);
+        ViewGroup.LayoutParams layoutParamsA4 = frameLayoutA4.getLayoutParams();
+        ViewGroup.LayoutParams layoutParamsA5 = frameLayoutA5.getLayoutParams();
+        ViewGroup.LayoutParams layoutParamsA6 = frameLayoutA6.getLayoutParams();
+        ViewGroup.LayoutParams layoutParamsCCCD = frameLayoutCCCD.getLayoutParams();
+        layoutParamsA4.width = widthA4;
+        layoutParamsA4.height = heightA4;
+        frameLayoutA4.setLayoutParams(layoutParamsA4);
+
+        layoutParamsA5.width = widthA5;
+        layoutParamsA5.height = heightA5;
+        frameLayoutA5.setLayoutParams(layoutParamsA5);
+
+        layoutParamsA6.width = widthA6;
+        layoutParamsA6.height = heightA6;
+        frameLayoutA6.setLayoutParams(layoutParamsA6);
+
+        layoutParamsCCCD.width = widthCCCD;
+        layoutParamsCCCD.height = heightCCCD;
+        frameLayoutCCCD.setLayoutParams(layoutParamsCCCD);
+
+        configShowFrame(currentSize);
+
+        previewView.getViewTreeObserver().removeOnGlobalLayoutListener(lis);
     }
 
     protected void setTextCount(int countPage){
