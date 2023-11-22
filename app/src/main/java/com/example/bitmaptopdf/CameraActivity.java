@@ -14,6 +14,7 @@ import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.DisplayMetrics;
 import android.util.Log;
+import android.util.Size;
 import android.view.Display;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -42,11 +43,15 @@ import java.util.Random;
 @TransformExperimental
 public class CameraActivity extends AppCompatActivity {
     public static final String TAG = ">>>>>" + CameraActivity.class.getSimpleName();
+    private List<Camera.Size> cameraSupportPictureSize = new ArrayList<>();
+    private List<Camera.Size> cameraSupportPreviewSize = new ArrayList<>();
+    private Camera.Size cameraPreviewSize;
+    private Camera.Size cameraPictureSize;
 
     private Camera cam = null;
     private final List<FrameLayout> frames = new ArrayList<>();
-    PaperSize currentSize = PaperSize.A4;
-    int papeNumber = 1;
+    PaperSize currentSize = PaperSize.A5;
+    int papeNumber = 5;
     List<Bitmap> bitmaps = new ArrayList<>();
     private FrameLayout frameLayoutA4, previewView;
     private FrameLayout frameLayoutA5;
@@ -69,19 +74,31 @@ public class CameraActivity extends AppCompatActivity {
 
         int width = displayMetrics.widthPixels;
         int height = width*16/9;
-        LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(width, height);
+
 //        Xét preview cho camera
         cam = openCamera();
         previewView = findViewById(R.id.previewCamera);
-        previewView.setLayoutParams(layoutParams);
+
         cameraPreview = new CameraPreview(this, cam);
         cameraPreview.setScaleX(-1f);
         previewView.addView(cameraPreview);
         Camera.Parameters parameters = cam.getParameters();
-        parameters.setPreviewSize(1920, 1080);
-        parameters.setPictureSize(1920, 1080);
+        cameraSupportPictureSize = parameters.getSupportedPictureSizes();
+        cameraSupportPreviewSize = parameters.getSupportedPreviewSizes();
+        cameraPictureSize = getSizeMax(cameraSupportPictureSize);
+        cameraPreviewSize = getSizeMax(cameraSupportPreviewSize);
+        if (cameraPictureSize != null) {
+            parameters.setPictureSize(cameraPictureSize.width, cameraPictureSize.height);
+        }
+        if (cameraPreviewSize != null) {
+            parameters.setPreviewSize(cameraPreviewSize.width, cameraPreviewSize.height);
+        }
+        parameters.setPreviewFrameRate(25);
         cam.setParameters(parameters);
+        cam.enableShutterSound(true);
         cam.setDisplayOrientation(270);
+//        LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(cameraPreview.getWidth(), cameraPreview.getHeight());
+//        previewView.setLayoutParams(layoutParams);
     }
 
     //Hàm để cài đặt view cho các Frame
@@ -103,7 +120,7 @@ public class CameraActivity extends AppCompatActivity {
         int screenWidth = display.getWidth();
 
         frameLayoutA4.getViewTreeObserver().addOnGlobalLayoutListener(() -> {
-            int widthA4 = screenWidth - 100 * 2;
+            int widthA4 = previewView.getWidth() - 100 * 2;
             int heightA4 = widthA4 * 297 / 210;
             int widthA5 = widthA4 - 2 * 100;
             int heightA5 = widthA5 * 210 / 148;
@@ -184,7 +201,7 @@ public class CameraActivity extends AppCompatActivity {
     private Camera openCamera() {
         Camera cam = null;
         try {
-            cam = Camera.open(1); // attempt to get a Camera instance
+            cam = Camera.open(0); // attempt to get a Camera instance
         } catch (Exception e) {
             // Camera is not available (in use or does not exist)
             Log.d(TAG, "openCamera: " + e.getMessage());
@@ -227,17 +244,26 @@ public class CameraActivity extends AppCompatActivity {
                 @Override
                 public void onPictureTaken(byte[] bytes, Camera camera) {
                     cam.startPreview();
-                Matrix matrix = new Matrix();
-                matrix.setRotate(90f);
-                Bitmap bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length, null);
-                Bitmap bitmap1 = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
 
+                Bitmap bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length, null);
+                    Matrix matrix = new Matrix();
+                    matrix.setRotate(-90f);
+
+                Bitmap bitmap10 = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
+                Bitmap bitmap1 = flipVerticalBitmap(bitmap10);
                 Rect rect = new Rect();
                 FrameLayout frameLayout = getFrameFromSize(currentSize);
                 frameLayout.getGlobalVisibleRect(rect);
-                Bitmap bitmap2 = Bitmap.createBitmap(bitmap1, Math.round(frameLayout.getX()), Math.round(frameLayout.getY()), rect.width(), rect.height(), null, true);
+                float ratioX = (float)cameraPreviewSize.width/(float)previewView.getHeight();
+                float ratioY = (float) cameraPreviewSize.height/(float)previewView.getWidth();
+
+                int top = Math.round(ratioX*frameLayout.getTop());
+                int left = Math.round(ratioY*frameLayout.getLeft() + 100*ratioY) ;
+                int width = Math.round(frameLayout.getWidth()*ratioY);
+                int height = Math.round(frameLayout.getHeight()*ratioX);
+                Bitmap bitmap2 = Bitmap.createBitmap(bitmap1, left, top, width, height, null, true);
                 bitmaps.add(bitmap2);
-                callBackCaptureDone.done();
+//                callBackCaptureDone.done();
 
 //                    MainActivity.bit = bitmap2;
 //                    MainActivity.bitReal = bitmap1;
@@ -329,6 +355,33 @@ public class CameraActivity extends AppCompatActivity {
         textViewPageNumber.setText( countPage +"/" + papeNumber);
     }
 
+    protected static Camera.Size getSizeMax(List<Camera.Size> sizes) {
+        if (sizes == null || sizes.isEmpty()) {
+            return null;
+        }
+        Camera.Size phanTuLonNhat = sizes.get(0);
+        for (Camera.Size kichThuoc : sizes) {
+            if (kichThuoc.width > phanTuLonNhat.width && kichThuoc.height > phanTuLonNhat.height) {
+                phanTuLonNhat = kichThuoc;
+            }
+        }
+        return phanTuLonNhat;
+    }
+
+    protected Bitmap flipHorizontalBitmap(Bitmap bitmap){
+        Matrix matrix = new Matrix();
+        matrix.setScale(1, -1);
+        matrix.postTranslate(0,bitmap.getHeight());
+        return Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
+
+    }
+    protected Bitmap flipVerticalBitmap(Bitmap bitmap){
+        Matrix matrix = new Matrix();
+        matrix.setScale(-1, 1);
+        matrix.postTranslate(bitmap.getWidth(),0);
+        return Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
+
+    }
     @Override
     protected void onDestroy() {
         super.onDestroy();
