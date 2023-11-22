@@ -242,19 +242,13 @@ public class CameraActivity extends AppCompatActivity {
                 float ratioX = (float)cameraPreviewSize.width/(float)previewView.getHeight();
                 float ratioY = (float) cameraPreviewSize.height/(float)previewView.getWidth();
 
-                int top = Math.round(ratioX*frameLayout.getTop());
-                int left = Math.round(ratioY*frameLayout.getLeft() + MARGIN_FRAME*ratioY) ;
-                int width = Math.round(frameLayout.getWidth()*ratioY);
-                int height = Math.round(frameLayout.getHeight()*ratioX);
+                int top = Math.round(ratioX*rect.top);
+                int left = Math.round(ratioY*rect.left) ;
+                int width = Math.round(rect.width()*ratioY);
+                int height = Math.round(rect.height()*ratioX);
                 Bitmap bitmap2 = Bitmap.createBitmap(bitmap1, left, top, width, height, null, true);
                 bitmaps.add(bitmap2);
-//                callBackCaptureDone.done();
-
-//                    MainActivity.bit = bitmap2;
-//                    MainActivity.bitReal = bitmap1;
-//                    Intent intent = new Intent(CameraActivity.this, MainActivity.class);
-//                    setResult(RESULT_OK, intent);
-//                    finish();
+                callBackCaptureDone.done();
                 }
             });
         }catch (Exception e){
