@@ -3,6 +3,7 @@ package com.example.bitmaptopdf;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
@@ -135,6 +136,7 @@ public class CameraActivity extends AppCompatActivity {
         previewView.getViewTreeObserver().addOnGlobalLayoutListener(lis);
     }
 
+
     //Hàm để config ẩn/hiện các frame
     protected void configShowFrame(PaperSize paperSize) {
         switch (paperSize) {
@@ -186,7 +188,7 @@ public class CameraActivity extends AppCompatActivity {
     private Camera openCamera() {
         Camera cam = null;
         try {
-            cam = Camera.open(0); // attempt to get a Camera instance
+            cam = Camera.open(1); // attempt to get a Camera instance
         } catch (Exception e) {
             // Camera is not available (in use or does not exist)
             Log.d(TAG, "openCamera: " + e.getMessage());
@@ -242,12 +244,13 @@ public class CameraActivity extends AppCompatActivity {
                 float ratioX = (float)cameraPreviewSize.width/(float)previewView.getHeight();
                 float ratioY = (float) cameraPreviewSize.height/(float)previewView.getWidth();
 
-                int top = Math.round(ratioX*rect.top);
-                int left = Math.round(ratioY*rect.left) ;
+                int top = Math.round(ratioY*rect.top);
+                int left = Math.round(ratioX*rect.left) ;
                 int width = Math.round(rect.width()*ratioY);
                 int height = Math.round(rect.height()*ratioX);
                 Bitmap bitmap2 = Bitmap.createBitmap(bitmap1, left, top, width, height, null, true);
                 bitmaps.add(bitmap2);
+                Bitmap bitmap3 = flipHorizontalBitmap(bitmap2);
                 callBackCaptureDone.done();
                 }
             });
