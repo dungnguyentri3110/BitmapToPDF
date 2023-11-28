@@ -67,6 +67,7 @@ public class CameraActivity extends AppCompatActivity {
     private double RATIO_FRAME_A5 = 210.0 / 148.0;
     private double RATIO_FRAME_A6 =  148.0 / 105.0;
     private double RATIO_FRAME_CCCD = 85.6 / 53.98;
+    private double RATIO_HEIGHT_FRAME_CCCD_A6 = 53.98/105.0;
 
     private ViewTreeObserver.OnGlobalLayoutListener lis = new ViewTreeObserver.OnGlobalLayoutListener() {
         @Override
@@ -91,6 +92,10 @@ public class CameraActivity extends AppCompatActivity {
 
 //        Xét preview cho camera
         cam = openCamera();
+        if (cam == null) {
+            Log.d("Init Camera", "Không thể khởi tạo camera");
+            return;
+        }
         previewView = findViewById(R.id.previewCamera);
 
         cameraPreview = new CameraPreview(this, cam);
@@ -133,7 +138,9 @@ public class CameraActivity extends AppCompatActivity {
         // Lấy kích thước của màn hình
         int screenWidth = display.getWidth();
 
-        previewView.getViewTreeObserver().addOnGlobalLayoutListener(lis);
+        if (cam != null) {
+            previewView.getViewTreeObserver().addOnGlobalLayoutListener(lis);
+        }
     }
 
 
@@ -249,8 +256,9 @@ public class CameraActivity extends AppCompatActivity {
                 int width = Math.round(rect.width()*ratioY);
                 int height = Math.round(rect.height()*ratioX);
                 Bitmap bitmap2 = Bitmap.createBitmap(bitmap1, left, top, width, height, null, true);
-                bitmaps.add(bitmap2);
+
                 Bitmap bitmap3 = flipHorizontalBitmap(bitmap2);
+                bitmaps.add(bitmap3);
                 callBackCaptureDone.done();
                 }
             });
@@ -287,6 +295,7 @@ public class CameraActivity extends AppCompatActivity {
         } else if (currentSize == PaperSize.CCCD){
             radioButtonCCCD.setChecked(true);
         }
+        edtNumPage.setText("" + papeNumber);
         buttonSubmit.setOnClickListener(view -> {
             Log.d("On Choosen Paper Size" , currentSize.value);
             try {
@@ -294,7 +303,7 @@ public class CameraActivity extends AppCompatActivity {
             } catch (Exception e){
                 papeNumber = 1;
             }
-            setTextCount(0);
+            setTextCount(bitmaps.size());
             configShowFrame(currentSize);
             dialog.dismiss();
         });
@@ -336,11 +345,11 @@ public class CameraActivity extends AppCompatActivity {
     protected void addListenerLoadViewFrame(){
         int widthA4 = previewView.getWidth() - MARGIN_FRAME * 2;
         int heightA4 = (int)(widthA4 * RATIO_FRAME_A4);
-        int widthA5 = widthA4 - 2 * 100;
+        int widthA5 = heightA4/2;
         int heightA5 = (int)(widthA5 * RATIO_FRAME_A5);
-        int widthA6 = widthA5 - 2 * 80;
+        int widthA6 = heightA5/2;
         int heightA6 = (int)(widthA6 * RATIO_FRAME_A6);
-        int widthCCCD = widthA6 - 2 * 100;
+        int widthCCCD = (int)(widthA6*RATIO_HEIGHT_FRAME_CCCD_A6);
         int heightCCCD = (int) (widthCCCD * RATIO_FRAME_CCCD);
         ViewGroup.LayoutParams layoutParamsA4 = frameLayoutA4.getLayoutParams();
         ViewGroup.LayoutParams layoutParamsA5 = frameLayoutA5.getLayoutParams();
@@ -401,9 +410,11 @@ public class CameraActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        Log.d(TAG, "onDestroy: '");
-        cam.stopPreview();
-        cam.release();
+        if (cam != null) {
+            Log.d(TAG, "onDestroy: '");
+            cam.stopPreview();
+            cam.release();
+        }
     }
 }
 
