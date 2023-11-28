@@ -86,18 +86,13 @@ public class CameraActivity extends AppCompatActivity {
     protected void setUpCamera(){
         DisplayMetrics displayMetrics = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
-
-        int width = displayMetrics.widthPixels;
-        int height = width*16/9;
-
+        previewView = findViewById(R.id.previewCamera);
 //        Xét preview cho camera
         cam = openCamera();
         if (cam == null) {
             Log.d("Init Camera", "Không thể khởi tạo camera");
             return;
         }
-        previewView = findViewById(R.id.previewCamera);
-
         cameraPreview = new CameraPreview(this, cam);
         cameraPreview.setScaleX(-1f);
         previewView.addView(cameraPreview);
@@ -116,8 +111,6 @@ public class CameraActivity extends AppCompatActivity {
         cam.setParameters(parameters);
         cam.enableShutterSound(true);
         cam.setDisplayOrientation(270);
-//        LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(cameraPreview.getWidth(), cameraPreview.getHeight());
-//        previewView.setLayoutParams(layoutParams);
     }
 
     //Hàm để cài đặt view cho các Frame
@@ -138,9 +131,7 @@ public class CameraActivity extends AppCompatActivity {
         // Lấy kích thước của màn hình
         int screenWidth = display.getWidth();
 
-        if (cam != null) {
-            previewView.getViewTreeObserver().addOnGlobalLayoutListener(lis);
-        }
+        previewView.getViewTreeObserver().addOnGlobalLayoutListener(lis);
     }
 
 
