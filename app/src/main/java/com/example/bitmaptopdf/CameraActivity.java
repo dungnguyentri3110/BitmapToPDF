@@ -82,6 +82,7 @@ public class CameraActivity extends AppCompatActivity {
         setContentView(R.layout.activity_camera);
         setUpCamera();
         setUpViewFrame();
+        setTextCount(bitmaps.size());
     }
     protected void setUpCamera(){
         DisplayMetrics displayMetrics = new DisplayMetrics();
