@@ -53,8 +53,8 @@ public class CameraActivity extends AppCompatActivity {
     private Camera cam = null;
     private final List<FrameLayout> frames = new ArrayList<>();
     PaperSize currentSize = PaperSize.A4;
-    int papeNumber = 5;
-    List<Bitmap> bitmaps = new ArrayList<>();
+    int papeNumber = 4;
+    List<PaperDocument> pages = new ArrayList<>();
     private FrameLayout frameLayoutA4, previewView;
     private FrameLayout frameLayoutA5;
     private FrameLayout frameLayoutA6;
@@ -63,11 +63,6 @@ public class CameraActivity extends AppCompatActivity {
     private TextView textViewPageNumber;
 
     private int MARGIN_FRAME = 50;
-    private double RATIO_FRAME_A4 = 297.0 / 210.0;
-    private double RATIO_FRAME_A5 = 210.0 / 148.0;
-    private double RATIO_FRAME_A6 =  148.0 / 105.0;
-    private double RATIO_FRAME_CCCD = 85.6 / 53.98;
-    private double RATIO_HEIGHT_FRAME_CCCD_A6 = 53.98/105.0;
 
     private ViewTreeObserver.OnGlobalLayoutListener lis = new ViewTreeObserver.OnGlobalLayoutListener() {
         @Override
@@ -82,7 +77,7 @@ public class CameraActivity extends AppCompatActivity {
         setContentView(R.layout.activity_camera);
         setUpCamera();
         setUpViewFrame();
-        setTextCount(bitmaps.size());
+        setTextCount(pages.size());
     }
     protected void setUpCamera(){
         DisplayMetrics displayMetrics = new DisplayMetrics();
@@ -92,10 +87,11 @@ public class CameraActivity extends AppCompatActivity {
         cam = openCamera();
         if (cam == null) {
             Log.d("Init Camera", "Không thể khởi tạo camera");
+            Toast.makeText(this,"Không thể khởi tạo camera",Toast.LENGTH_LONG).show();
             return;
         }
         cameraPreview = new CameraPreview(this, cam);
-        cameraPreview.setScaleX(-1f);
+//        cameraPreview.setScaleX(-1f);
         previewView.addView(cameraPreview);
         Camera.Parameters parameters = cam.getParameters();
         cameraSupportPictureSize = parameters.getSupportedPictureSizes();
@@ -111,7 +107,7 @@ public class CameraActivity extends AppCompatActivity {
         parameters.setPreviewFrameRate(25);
         cam.setParameters(parameters);
         cam.enableShutterSound(true);
-        cam.setDisplayOrientation(270);
+        cam.setDisplayOrientation(90);
     }
 
     //Hàm để cài đặt view cho các Frame
@@ -187,7 +183,7 @@ public class CameraActivity extends AppCompatActivity {
     private Camera openCamera() {
         Camera cam = null;
         try {
-            cam = Camera.open(1); // attempt to get a Camera instance
+            cam = Camera.open(0); // attempt to get a Camera instance
         } catch (Exception e) {
             // Camera is not available (in use or does not exist)
             Log.d(TAG, "openCamera: " + e.getMessage());
@@ -197,17 +193,19 @@ public class CameraActivity extends AppCompatActivity {
 
     public void onClickCapture(View view) {
         takePicture(() -> {
-            int countPage = bitmaps.size();
+            int countPage = pages.size();
             setTextCount(countPage);
-            if (bitmaps.size() >= papeNumber) {
+            if (pages.size() >= papeNumber) {
                 onClickDone(view);
+            } else if (cam != null) {
+                cam.startPreview();
             }
         });
     }
 
     public void onClickDone(View view) {
         PDFGenerator pdfGenerator = new PDFGenerator();
-        PdfDocument pdfDocument = pdfGenerator.initFromBitmaps(bitmaps);
+        PdfDocument pdfDocument = pdfGenerator.initFromPaperDocument(pages);
         try {
             pdfGenerator.saveDocumentToStorage(pdfDocument);
             Toast.makeText(this, "Make pdf success", Toast.LENGTH_SHORT).show();
@@ -226,10 +224,11 @@ public class CameraActivity extends AppCompatActivity {
 
     private void takePicture(CallBackCaptureDone callBackCaptureDone) {
         try {
+            final int PADDING = 20;
             cam.takePicture(null, null, new Camera.PictureCallback() {
                 @Override
                 public void onPictureTaken(byte[] bytes, Camera camera) {
-                    cam.startPreview();
+
 
                 Bitmap bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length, null);
                     Matrix matrix = new Matrix();
@@ -243,14 +242,14 @@ public class CameraActivity extends AppCompatActivity {
                 float ratioX = (float)cameraPreviewSize.width/(float)previewView.getHeight();
                 float ratioY = (float) cameraPreviewSize.height/(float)previewView.getWidth();
 
-                int top = Math.round(ratioY*rect.top);
-                int left = Math.round(ratioX*rect.left) ;
-                int width = Math.round(rect.width()*ratioY);
-                int height = Math.round(rect.height()*ratioX);
+                int top = Math.round(ratioY*rect.top) - PADDING;
+                int left = Math.round(ratioX*rect.left) - PADDING ;
+                int width = Math.round(rect.width()*ratioY) + 2*PADDING;
+                int height = Math.round(rect.height()*ratioX) + 2*PADDING;
                 Bitmap bitmap2 = Bitmap.createBitmap(bitmap1, left, top, width, height, null, true);
 
                 Bitmap bitmap3 = flipHorizontalBitmap(bitmap2);
-                bitmaps.add(bitmap3);
+                pages.add(new PaperDocument(currentSize, bitmap3));
                 callBackCaptureDone.done();
                 }
             });
@@ -295,7 +294,7 @@ public class CameraActivity extends AppCompatActivity {
             } catch (Exception e){
                 papeNumber = 1;
             }
-            setTextCount(bitmaps.size());
+            setTextCount(pages.size());
             configShowFrame(currentSize);
             dialog.dismiss();
         });
@@ -336,13 +335,13 @@ public class CameraActivity extends AppCompatActivity {
 
     protected void addListenerLoadViewFrame(){
         int widthA4 = previewView.getWidth() - MARGIN_FRAME * 2;
-        int heightA4 = (int)(widthA4 * RATIO_FRAME_A4);
+        int heightA4 = (int)(widthA4 * PaperSize.A4.getRatioHW());
         int widthA5 = heightA4/2;
-        int heightA5 = (int)(widthA5 * RATIO_FRAME_A5);
+        int heightA5 = (int)(widthA5 * PaperSize.A5.getRatioHW());
         int widthA6 = heightA5/2;
-        int heightA6 = (int)(widthA6 * RATIO_FRAME_A6);
-        int widthCCCD = (int)(widthA6*RATIO_HEIGHT_FRAME_CCCD_A6);
-        int heightCCCD = (int) (widthCCCD * RATIO_FRAME_CCCD);
+        int heightA6 = (int)(widthA6 * PaperSize.A6.getRatioHW());
+        int widthCCCD = (int)(widthA6*PDFGenerator.RATIO_HEIGHT_FRAME_CCCD_A6);
+        int heightCCCD = (int) (widthCCCD * PaperSize.CCCD.getRatioHW());
         ViewGroup.LayoutParams layoutParamsA4 = frameLayoutA4.getLayoutParams();
         ViewGroup.LayoutParams layoutParamsA5 = frameLayoutA5.getLayoutParams();
         ViewGroup.LayoutParams layoutParamsA6 = frameLayoutA6.getLayoutParams();

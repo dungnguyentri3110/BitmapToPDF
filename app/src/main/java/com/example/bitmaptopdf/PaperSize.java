@@ -1,5 +1,7 @@
 package com.example.bitmaptopdf;
 
+import android.graphics.Bitmap;
+
 public enum PaperSize {
     ALL("All"),
     A4("A4"),
@@ -29,5 +31,49 @@ public enum PaperSize {
             default:
                 return PaperSize.NONE;
         }
+    }
+
+    public double getRatioHW() {
+        return getHeight()/getWidth();
+    }
+
+    public double getWidth() {
+        switch (this){
+            case A4:
+                return 210.0;
+            case A5:
+                return 148.0;
+            case A6:
+                return 105.0;
+            case CCCD:
+                return 53.98;
+            default:
+                return A4.getWidth();
+        }
+    }
+
+    public double getHeight() {
+        switch (this){
+            case A4:
+                return 297.0;
+            case A5:
+                return 210.0;
+            case A6:
+                return 148.0;
+            case CCCD:
+                return 85.6;
+            default:
+                return A4.getHeight();
+        }
+    }
+}
+
+class PaperDocument {
+    PaperSize paperSize;
+    Bitmap bitmap;
+
+    public PaperDocument(PaperSize paperSize, Bitmap bitmap) {
+        this.paperSize = paperSize;
+        this.bitmap = bitmap;
     }
 }
